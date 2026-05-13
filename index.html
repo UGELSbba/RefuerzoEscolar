@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Refuerzo Escolar</title>
+    <title>Refuerzo Escolar - Lecturas</title>
     <style>
         /* ================= ESTILOS BASE ================= */
         * {
@@ -16,6 +16,7 @@
         body {
             background-color: #f4f6f5; 
             -webkit-tap-highlight-color: transparent;
+            padding-bottom: 80px;
         }
 
         /* ================= CABECERA ================= */
@@ -24,7 +25,7 @@
             color: #ffffff;
             padding: 20px 15px;
             text-align: center;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             border-bottom: 5px solid #f1c40f; 
@@ -34,115 +35,173 @@
         }
 
         .header-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: normal;
             color: #e2f0e6;
             margin-top: 5px;
             text-transform: uppercase;
         }
 
-        /* ================= CONTENEDOR DE BOTONES ================= */
-        .botones-container {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* ================= CONTENEDORES Y TARJETAS ================= */
+        .seccion {
+            padding: 15px;
         }
 
-        .btn-documento {
+        .card {
             background-color: #ffffff;
-            color: #1a5c2b;
-            border: 2px solid #1a5c2b;
             border-radius: 12px;
-            padding: 16px 20px;
-            font-size: 1.1rem;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ================= BOTONES DE DOCUMENTOS ================= */
+        .btn-documento {
+            background-color: #f8fafc;
+            color: #1a5c2b;
+            border: 2px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.05rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
             cursor: pointer;
+            text-align: left;
         }
 
         .btn-documento:active, .btn-documento:hover {
-            transform: scale(0.97);
-            background-color: #f1c40f;
-            color: #1a5c2b;
-            border-color: #f1c40f;
+            transform: scale(0.98);
+            background-color: #f0f8f1;
+            border-color: #1a5c2b;
+        }
+
+        .icono {
+            font-size: 1.6rem;
         }
 
         /* ================= BOTÓN SALIR ================= */
         .btn-salir-app {
-            background-color: #c53030;
+            background-color: #e53e3e;
             color: #ffffff;
-            border: 2px solid #9b2c2c;
-            border-radius: 12px;
-            padding: 16px 20px;
-            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.05rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-top: 10px;
+            margin-top: 5px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
         .btn-salir-app:active {
-            transform: scale(0.97);
-            background-color: #9b2c2c;
-        }
-
-        .icono {
-            font-size: 1.8rem;
+            background-color: #c53030;
+            transform: scale(0.98);
         }
 
         /* ================= IMAGEN DEL ESTUDIANTE ================= */
         .imagen-footer-container {
-            margin-top: 25px;
             text-align: center;
-            padding: 10px;
+            padding: 10px 0;
         }
 
         .imagen-footer {
             max-width: 100%;
             height: auto;
-            max-height: 220px;
-            border-radius: 15px;
+            max-height: 200px;
+            border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            border: 3px solid #1a5c2b;
+            border: 2px solid #1a5c2b;
             object-fit: cover;
         }
 
         .imagen-placeholder {
-            width: 150px;
+            width: 120px;
             height: auto;
             margin: 0 auto;
             display: none; 
         }
 
-        /* ================= BOTÓN FLOTANTE INSTALAR ================= */
+        /* ================= VISUALIZADOR DE PDF ================= */
+        .modal-visor {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #000000;
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        .visor-header {
+            background-color: #1a5c2b;
+            border-bottom: 3px solid #f1c40f;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .visor-titulo {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1rem;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+
+        .btn-cerrar-visor {
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        .visor-iframe {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #ffffff;
+        }
+
+        /* ================= BOTÓN FLOTANTE INSTALAR APK ================= */
         .btn-flotante-instalar {
             display: flex;
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 20px;
+            right: 20px;
             background-color: #f1c40f; 
             color: #1a5c2b; 
             border: 2px solid #1a5c2b;
             border-radius: 50px;
-            padding: 15px 25px;
-            font-size: 1.1rem;
+            padding: 12px 20px;
+            font-size: 1rem;
             font-weight: 900;
             box-shadow: 0 6px 14px rgba(0,0,0,0.3);
             z-index: 1000;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
+            text-decoration: none;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-flotante-instalar:active {
@@ -171,72 +230,104 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             border: 3px solid #1a5c2b;
         }
+        
+        .btn-accion-msj {
+            width: 100%;
+            background-color: #f1c40f;
+            color: #1a5c2b;
+            border: 2px solid #1a5c2b;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
 
+    <!-- CABECERA -->
     <div class="app-header">
-        Institución Educativa Sebastián Lorente Ibañez - Lambras
-        <div class="header-subtitle">LECTURAS DE REFUERZO ESCOLAR - COMUNICACIÓN</div>
+        IE Sebastián Lorente Ibañez - Lambras
+        <div class="header-subtitle">LECTURAS DE REFUERZO ESCOLAR</div>
     </div>
 
-    <div class="botones-container">
-        <!-- Textos de los botones con los nombres exactos de los PDFs -->
-        <button class="btn-documento" onclick="abrirPdf('LECTURA RE 1RO.pdf', 'Lectura 1ro de Secundaria')">
-            <span class="icono">📖</span> Lectura 1ro de Secundaria
-        </button>
-        
-        <button class="btn-documento" onclick="abrirPdf('LECTURA RE 2DO.pdf', 'Lectura 2do de Secundaria')">
-            <span class="icono">📘</span> Lectura 2do de Secundaria
-        </button>
-        
-        <button class="btn-documento" onclick="abrirPdf('LECTURA R.E. 3RO.pdf', 'Lectura 3ro de Secundaria')">
-            <span class="icono">📗</span> Lectura 3ro de Secundaria
-        </button>
-        
-        <button class="btn-documento" onclick="abrirPdf('LECTURA RE 4TO.pdf', 'Lectura 4to de Secundaria')">
-            <span class="icono">📙</span> Lectura 4to de Secundaria
-        </button>
-        
-        <button class="btn-documento" onclick="abrirPdf('LECTURA  RE 5TO.pdf', 'Lectura 5to de Secundaria')">
-            <span class="icono">📚</span> Lectura 5to de Secundaria
-        </button>
-
-        <button class="btn-salir-app" onclick="salirAplicacion()">
-            <span class="icono">🚪</span> Salir de la Aplicación
-        </button>
-
-        <!-- Contenedor para la imagen del estudiante -->
-        <div class="imagen-footer-container">
-            <img src="estudiante.jpg" alt="[Imagen de estudiante leyendo]" class="imagen-footer" id="fotoEstudiante" onerror="this.style.display='none'; document.getElementById('dibujoEstudiante').style.display='block';">
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="seccion">
+        <div class="card">
+            <h3 style="color:#1a5c2b; margin-bottom: 5px; text-align: center;">Área de Comunicación</h3>
+            <p style="text-align: center; font-size: 0.85rem; color: #718096; margin-bottom: 10px;">Selecciona una lectura para visualizarla offline</p>
             
-            <svg class="imagen-placeholder" id="dibujoEstudiante" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- LISTA DE BOTONES PDF -->
+            <button class="btn-documento" onclick="abrirPdf('LECTURA RE 1RO.pdf', 'Lectura 1ro de Secundaria')">
+                <span class="icono">📖</span> <span>Lectura 1ro de Secundaria</span>
+            </button>
+            
+            <button class="btn-documento" onclick="abrirPdf('LECTURA RE 2DO.pdf', 'Lectura 2do de Secundaria')">
+                <span class="icono">📘</span> <span>Lectura 2do de Secundaria</span>
+            </button>
+            
+            <button class="btn-documento" onclick="abrirPdf('LECTURA R.E. 3RO.pdf', 'Lectura 3ro de Secundaria')">
+                <span class="icono">📗</span> <span>Lectura 3ro de Secundaria</span>
+            </button>
+            
+            <button class="btn-documento" onclick="abrirPdf('LECTURA RE 4TO.pdf', 'Lectura 4to de Secundaria')">
+                <span class="icono">📙</span> <span>Lectura 4to de Secundaria</span>
+            </button>
+            
+            <button class="btn-documento" onclick="abrirPdf('LECTURA  RE 5TO.pdf', 'Lectura 5to de Secundaria')">
+                <span class="icono">📚</span> <span>Lectura 5to de Secundaria</span>
+            </button>
+        </div>
+
+        <!-- TARJETA INFERIOR (FOTO Y SALIR) -->
+        <div class="card">
+            <div class="imagen-footer-container">
+                <img src="estudiante.jpg" alt="" class="imagen-footer" id="fotoEstudiante" onerror="this.style.display='none'; document.getElementById('dibujoEstudiante').style.display='block';">
+                
+                <svg class="imagen-placeholder" id="dibujoEstudiante" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="100" r="90" fill="#e2f0e6"/>
+                    <circle cx="100" cy="65" r="28" fill="#1a5c2b"/>
+                    <path d="M45 160 Q 100 110 155 160 L 155 190 Q 100 190 45 190 Z" fill="#1a5c2b"/>
+                    <path d="M65 145 L 100 155 L 135 145 L 135 110 L 100 125 L 65 110 Z" fill="#f1c40f"/>
+                    <path d="M100 155 L 100 125" stroke="#1a5c2b" stroke-width="3"/>
+                </svg>
+            </div>
+            
+            <button class="btn-salir-app" onclick="salirAplicacion()">
+                <span>🚪 Salir de la Aplicación</span>
+            </button>
+        </div>
+    </div>
+
     <!-- VISUALIZADOR DE PDF -->
     <div class="modal-visor" id="pantallaVisor">
         <div class="visor-header">
             <div class="visor-titulo" id="tituloDocumento">Documento</div>
-            <button class="btn-cerrar" onclick="cerrarPdf()">Salir / Cerrar</button>
+            <button class="btn-cerrar-visor" onclick="cerrarPdf()">Salir / Cerrar</button>
         </div>
+        <!-- Iframe para visor interno -->
         <iframe class="visor-iframe" id="marcoPdf"></iframe>
     </div>
 
-    <!-- BOTÓN FLOTANTE PARA DESCARGAR EL APK DESDE GITHUB -->
-    <a href="RefuerzoEscolar.apk" download="RefuerzoEscolar.apk" class="btn-flotante-instalar" id="btnInstalar" style="text-decoration: none;">
-        <span style="font-size: 1.5rem;">📥</span> Descargar App (.apk)
+    <!-- BOTÓN FLOTANTE PARA DESCARGAR EL APK (Mismo comportamiento que Asistencia) -->
+    <!-- IMPORTANTE: Asegúrate de subir 'RefuerzoEscolar.apk' a GitHub -->
+    <a href="RefuerzoEscolar.apk" download="RefuerzoEscolar.apk" class="btn-flotante-instalar" id="btnInstalar">
+        📥 Descargar App
     </a>
 
-    <!-- CAJA DE MENSAJE -->
+    <!-- CAJA DE MENSAJE PERSONALIZADA -->
     <div class="caixa-mensagem-overlay" id="modalMensagem">
         <div class="caixa-mensagem-conteudo">
-            <p id="textoMensagem" style="font-size: 1.1rem; color: #1a5c2b; font-weight: bold; margin-bottom: 20px;"></p>
-            <button id="btnAceptarMensaje" class="btn-documento" style="justify-content: center; width: 100%; background-color: #f1c40f; border-color: #1a5c2b;" onclick="cerrarMensaje()">OK</button>
+            <p id="textoMensagem" style="font-size: 1.05rem; color: #1a5c2b; font-weight: bold; margin-bottom: 10px; white-space: pre-line;"></p>
+            <button id="btnAceptarMensaje" class="btn-accion-msj" onclick="cerrarMensaje()">Entendido</button>
         </div>
     </div>
 
     <script>
-        // ================= SISTEMA AVANZADO DE LECTURA OFFLINE (CACHÉ PWA) =================
-        // Se actualizó a v2 para asegurar que limpie cachés viejos si haces pruebas
-        const NOMBRE_CACHE = 'app-lecturas-github-v2'; 
+        // ================= SISTEMA DE LECTURA OFFLINE (CACHÉ) =================
+        const NOMBRE_CACHE = 'app-lecturas-cache-v1'; 
         const ARCHIVOS_A_DESCARGAR = [
             'LECTURA RE 1RO.pdf',
             'LECTURA RE 2DO.pdf',
@@ -246,28 +337,28 @@
             'estudiante.jpg'
         ];
 
-        // Descarga los PDFs desde GitHub y los guarda en la memoria del celular
-        async function guardarArchivosEnCelular() {
+        async function preCargarArchivos() {
             try {
                 const cache = await caches.open(NOMBRE_CACHE);
                 for (let archivo of ARCHIVOS_A_DESCARGAR) {
                     const ruta = encodeURI(archivo);
-                    const respuesta = await fetch(ruta);
-                    if (respuesta.ok) {
-                        await cache.put(ruta, respuesta.clone());
+                    // Solo lo descarga si no existe en caché (ahorra datos)
+                    const existe = await cache.match(ruta);
+                    if (!existe) {
+                        const respuesta = await fetch(ruta);
+                        if (respuesta.ok) await cache.put(ruta, respuesta.clone());
                     }
                 }
-                return true;
             } catch (error) {
-                console.error("Hubo un error guardando los archivos:", error);
-                return false;
+                console.log("Modo offline en espera.");
             }
         }
+        // Iniciar precarga al abrir la app
+        window.onload = preCargarArchivos;
 
-        // ================= LÓGICA: ABRIR PDF NATIVAMENTE EN ANDROID =================
+        // ================= ABRIR PDF (SOPORTA OFFLINE) =================
         async function abrirPdf(rutaArchivo, titulo) {
-            mostrarMensaje("Abriendo " + titulo + "...\nEl documento se abrirá usando el lector de tu celular.");
-            
+            mostrarMensaje("Abriendo " + titulo + "...\nEspera un momento.");
             document.getElementById('btnAceptarMensaje').style.display = 'none';
 
             try {
@@ -275,7 +366,7 @@
                 const rutaCodificada = encodeURI(rutaArchivo);
                 let archivoGuardado = await cache.match(rutaCodificada);
                 
-                // Si el archivo no está en la memoria del celular, lo intenta descargar
+                // Si no está en caché, intentar descargar
                 if (!archivoGuardado) {
                     const respuesta = await fetch(rutaCodificada);
                     if (respuesta.ok) {
@@ -284,47 +375,41 @@
                     }
                 }
                 
+                // Abrir en el iframe visor
                 if (archivoGuardado) {
-                    // Forzamos al sistema Android a entender que es un PDF (application/pdf)
                     const blobOriginal = await archivoGuardado.blob();
                     const pdfBlob = new Blob([blobOriginal], { type: 'application/pdf' });
                     const urlGenerada = URL.createObjectURL(pdfBlob);
                     
-                    // Activamos la apertura nativa del celular
-                    const enlace = document.createElement('a');
-                    enlace.href = urlGenerada;
-                    enlace.download = rutaArchivo; 
-                    document.body.appendChild(enlace);
-                    enlace.click();
-                    document.body.removeChild(enlace);
-                    
-                    // Liberar memoria después de un corto tiempo
-                    setTimeout(() => URL.revokeObjectURL(urlGenerada), 5000);
+                    document.getElementById('tituloDocumento').innerText = titulo;
+                    document.getElementById('marcoPdf').src = urlGenerada;
+                    document.getElementById('pantallaVisor').style.display = 'flex';
                 } else {
-                    mostrarMensaje("❌ Necesitas internet la primera vez para descargar este PDF.");
+                    mostrarMensaje("❌ Necesitas internet la primera vez para abrir este PDF.");
                 }
             } catch (error) {
-                // Si falla algo, intenta abrir el link directo de GitHub en una nueva pestaña
-                const enlace = document.createElement('a');
-                enlace.href = encodeURI(rutaArchivo);
-                enlace.target = '_blank';
-                document.body.appendChild(enlace);
-                enlace.click();
-                document.body.removeChild(enlace);
+                // Fallback directo si algo falla
+                document.getElementById('tituloDocumento').innerText = titulo;
+                document.getElementById('marcoPdf').src = encodeURI(rutaArchivo);
+                document.getElementById('pantallaVisor').style.display = 'flex';
             }
 
-            // Ocultar mensaje de "Abriendo..." automáticamente después de 3 segundos
+            // Ocultar mensaje de carga
             setTimeout(() => {
                 cerrarMensaje();
-                document.getElementById('btnAceptarMensaje').style.display = 'flex';
-            }, 3000);
+                document.getElementById('btnAceptarMensaje').style.display = 'block';
+            }, 1500);
         }
 
-        // ================= FUNCIONES DE INTERFAZ =================
+        function cerrarPdf() {
+            document.getElementById('pantallaVisor').style.display = 'none';
+            document.getElementById('marcoPdf').src = '';
+        }
+
+        // ================= INTERFAZ Y MENSAJES =================
         function mostrarMensaje(texto) {
             document.getElementById('textoMensagem').innerText = texto;
             document.getElementById('modalMensagem').style.display = 'flex';
-            document.getElementById('btnAceptarMensaje').style.display = 'flex';
         }
 
         function cerrarMensaje() {
@@ -333,19 +418,35 @@
 
         function salirAplicacion() {
             if (typeof navigator.app !== "undefined" && navigator.app.exitApp) {
-                navigator.app.exitApp(); // Comando para salir si es un APK compilado puro
+                navigator.app.exitApp();
             } else {
-                window.close(); // Comando web normal
-                mostrarMensaje("Para salir, puedes presionar el botón 'Atrás' o 'Inicio' de tu celular.");
+                window.close();
+                mostrarMensaje("Para salir, presiona el botón 'Atrás' o 'Inicio' de tu celular.");
             }
         }
 
-        // ================= LÓGICA DE INSTALACIÓN EN GITHUB (PWA) =================
-        // Manifiesto PWA para que el celular lo reconozca como App Instalable
+        // ================= LÓGICA DE INSTALACIÓN (BOTÓN FLOTANTE APK) =================
+        const btnInstalar = document.getElementById('btnInstalar');
+        
+        // Oculta el botón si la aplicación se está ejecutando instalada (Nativa o PWA)
+        const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'file:' || document.referrer.includes('android-app://');
+
+        btnInstalar.addEventListener('click', () => {
+            mostrarMensaje("📥 INICIANDO DESCARGA...\n\n1. Espera a que termine la descarga del archivo 'RefuerzoEscolar.apk'.\n2. Revisa la barra de notificaciones y toca el archivo para instalar.");
+            
+            setTimeout(() => {
+                cerrarMensaje();
+            }, 7000);
+        });
+
+        if (esStandalone) {
+            btnInstalar.style.display = 'none';
+        }
+
+        // ================= MANIFEST PWA (Requerido para funcionalidad offline nativa) =================
         const manifestJSON = {
             "name": "Refuerzo Escolar",
-            "short_name": "Refuerzo",
-            "start_url": ".",
+            "short_name": "Lecturas",
             "display": "standalone",
             "background_color": "#1a5c2b",
             "theme_color": "#1a5c2b",
@@ -357,33 +458,6 @@
         };
         const blobManifest = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
         document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blobManifest)}">`);
-
-        // Simular un Service Worker para que Chrome permita la instalación
-        const swCode = `self.addEventListener('fetch', () => {});`;
-        const blobSW = new Blob([swCode], {type: 'application/javascript'});
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(URL.createObjectURL(blobSW)).catch(() => {});
-        }
-
-        const btnInstalar = document.getElementById('btnInstalar');
-
-        // Detecta si la App ya se está ejecutando instalada en pantalla completa o desde el archivo APK local
-        const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://') || window.location.protocol === 'file:';
-
-        // Evento al presionar el Botón Flotante
-        btnInstalar.addEventListener('click', () => {
-            mostrarMensaje("Iniciando descarga del instalador...\n\n1. Espera a que termine de descargar el archivo 'RefuerzoEscolar.apk'.\n2. Toca 'Abrir' en la notificación para instalar la aplicación en el celular.");
-            
-            // Ocultar el mensaje después de 6 segundos
-            setTimeout(() => {
-                cerrarMensaje();
-            }, 6000);
-        });
-
-        // Ocultar el botón si la aplicación ya está instalada o abriéndose como App nativa
-        if (esStandalone) {
-            btnInstalar.style.display = 'none';
-        }
     </script>
 
 </body>

@@ -183,9 +183,9 @@
             background-color: #ffffff;
         }
 
-        /* ================= BOTÓN FLOTANTE INSTALAR APK ================= */
+        /* ================= BOTÓN FLOTANTE INSTALAR NATIVO ================= */
         .btn-flotante-instalar {
-            display: flex;
+            display: flex; /* SIEMPRE VISIBLE POR DEFECTO */
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -311,11 +311,10 @@
         <iframe class="visor-iframe" id="marcoPdf"></iframe>
     </div>
 
-    <!-- BOTÓN FLOTANTE PARA DESCARGAR EL APK (Mismo comportamiento que Asistencia) -->
-    <!-- IMPORTANTE: Asegúrate de subir 'RefuerzoEscolar.apk' a GitHub -->
-    <a href="RefuerzoEscolar.apk" download="RefuerzoEscolar.apk" class="btn-flotante-instalar" id="btnInstalar">
-        📥 Descargar App
-    </a>
+    <!-- BOTÓN FLOTANTE PARA INSTALAR COMO APLICACIÓN PWA (Nativa desde Navegador) -->
+    <button class="btn-flotante-instalar" id="btnInstalar">
+        📲 Instalar App
+    </button>
 
     <!-- CAJA DE MENSAJE PERSONALIZADA -->
     <div class="caixa-mensagem-overlay" id="modalMensagem">
@@ -327,7 +326,7 @@
 
     <script>
         // ================= SISTEMA DE LECTURA OFFLINE (CACHÉ) =================
-        const NOMBRE_CACHE = 'app-lecturas-cache-v1'; 
+        const NOMBRE_CACHE = 'app-lecturas-cache-v3'; 
         const ARCHIVOS_A_DESCARGAR = [
             'LECTURA RE 1RO.pdf',
             'LECTURA RE 2DO.pdf',
@@ -342,7 +341,6 @@
                 const cache = await caches.open(NOMBRE_CACHE);
                 for (let archivo of ARCHIVOS_A_DESCARGAR) {
                     const ruta = encodeURI(archivo);
-                    // Solo lo descarga si no existe en caché (ahorra datos)
                     const existe = await cache.match(ruta);
                     if (!existe) {
                         const respuesta = await fetch(ruta);
@@ -353,7 +351,8 @@
                 console.log("Modo offline en espera.");
             }
         }
-        // Iniciar precarga al abrir la app
+        
+        // Iniciar precarga de PDFs al abrir la app para asegurar uso sin internet
         window.onload = preCargarArchivos;
 
         // ================= ABRIR PDF (SOPORTA OFFLINE) =================
@@ -366,7 +365,7 @@
                 const rutaCodificada = encodeURI(rutaArchivo);
                 let archivoGuardado = await cache.match(rutaCodificada);
                 
-                // Si no está en caché, intentar descargar
+                // Si no está en caché, intentar descargar en el momento
                 if (!archivoGuardado) {
                     const respuesta = await fetch(rutaCodificada);
                     if (respuesta.ok) {
@@ -388,7 +387,7 @@
                     mostrarMensaje("❌ Necesitas internet la primera vez para abrir este PDF.");
                 }
             } catch (error) {
-                // Fallback directo si algo falla
+                // Fallback directo si falla la memoria del celular
                 document.getElementById('tituloDocumento').innerText = titulo;
                 document.getElementById('marcoPdf').src = encodeURI(rutaArchivo);
                 document.getElementById('pantallaVisor').style.display = 'flex';
@@ -425,29 +424,13 @@
             }
         }
 
-        // ================= LÓGICA DE INSTALACIÓN (BOTÓN FLOTANTE APK) =================
-        const btnInstalar = document.getElementById('btnInstalar');
-        
-        // Oculta el botón si la aplicación se está ejecutando instalada (Nativa o PWA)
-        const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || window.location.protocol === 'file:' || document.referrer.includes('android-app://');
-
-        btnInstalar.addEventListener('click', () => {
-            mostrarMensaje("📥 INICIANDO DESCARGA...\n\n1. Espera a que termine la descarga del archivo 'RefuerzoEscolar.apk'.\n2. Revisa la barra de notificaciones y toca el archivo para instalar.");
-            
-            setTimeout(() => {
-                cerrarMensaje();
-            }, 7000);
-        });
-
-        if (esStandalone) {
-            btnInstalar.style.display = 'none';
-        }
-
-        // ================= MANIFEST PWA (Requerido para funcionalidad offline nativa) =================
+        // ================= MANIFEST PWA Y SERVICE WORKER (Para Instalación Nativa) =================
+        // Esto le dice al celular que es una Aplicación y cómo debe verse su ícono
         const manifestJSON = {
             "name": "Refuerzo Escolar",
             "short_name": "Lecturas",
             "display": "standalone",
+            "start_url": window.location.href.split('?')[0],
             "background_color": "#1a5c2b",
             "theme_color": "#1a5c2b",
             "icons": [{
@@ -458,6 +441,62 @@
         };
         const blobManifest = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
         document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blobManifest)}">`);
+
+        // Registrar Service Worker mínimo necesario para que Android permita instalar la app
+        const swCode = `
+            self.addEventListener('install', (e) => { self.skipWaiting(); });
+            self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+            self.addEventListener('fetch', (e) => {});
+        `;
+        const blobSW = new Blob([swCode], {type: 'application/javascript'});
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(URL.createObjectURL(blobSW)).catch(() => {});
+        }
+
+        // ================= LÓGICA DEL BOTÓN FLOTANTE DE INSTALACIÓN NATIVA =================
+        const btnInstalar = document.getElementById('btnInstalar');
+        let eventoInstalacion = null;
+
+        // Verifica si la app ya está corriendo instalada desde el celular
+        const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+
+        // Capturamos el evento de instalación que dispara Chrome/Android
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Evitamos que salga el mini cartel automático molesto
+            e.preventDefault();
+            // Guardamos el evento
+            eventoInstalacion = e;
+        });
+
+        // Lo que sucede cuando el alumno presiona el botón "Instalar App"
+        btnInstalar.addEventListener('click', async () => {
+            if (!eventoInstalacion) {
+                mostrarMensaje("Para instalar como aplicativo nativo:\n\n1. Toca los 3 puntitos del navegador (arriba a la derecha).\n2. Selecciona 'Agregar a la pantalla principal' o 'Instalar aplicación'.");
+                return;
+            }
+            
+            // Disparamos la ventana de instalación del propio celular (Nativa)
+            eventoInstalacion.prompt();
+            
+            // Esperamos la respuesta del alumno (Instalar o Cancelar)
+            const { outcome } = await eventoInstalacion.userChoice;
+            if (outcome === 'accepted') {
+                btnInstalar.style.display = 'none'; // Se oculta porque ya se está instalando
+            }
+            // Limpiamos el evento
+            eventoInstalacion = null;
+        });
+
+        // Escuchamos si la instalación fue exitosa para dar un mensaje
+        window.addEventListener('appinstalled', () => {
+            btnInstalar.style.display = 'none';
+            mostrarMensaje("✅ ¡Aplicación instalada con éxito!\n\nPuedes cerrarla aquí y buscar el ícono 'Lecturas' directamente en la pantalla de inicio de tu celular para usarla sin internet.");
+        });
+
+        // Asegurarnos de que el botón no aparezca si ya entraron desde la app instalada
+        if (esStandalone) {
+            btnInstalar.style.display = 'none';
+        }
     </script>
 
 </body>

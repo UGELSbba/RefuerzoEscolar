@@ -183,9 +183,9 @@
             background-color: #ffffff;
         }
 
-        /* ================= BOTÓN FLOTANTE INSTALAR NATIVO ================= */
+        /* ================= BOTÓN FLOTANTE INTELIGENTE ================= */
         .btn-flotante-instalar {
-            display: flex; /* SIEMPRE VISIBLE POR DEFECTO */
+            display: flex; 
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -202,10 +202,76 @@
             text-decoration: none;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s ease;
         }
 
         .btn-flotante-instalar:active {
             transform: scale(0.95);
+        }
+
+        /* ================= MENÚ DE OPCIONES DE INSTALACIÓN (ESTILO APP) ================= */
+        .menu-instalacion-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 10001;
+            justify-content: center;
+            align-items: flex-end; /* Lo alinea abajo como en las apps modernas */
+        }
+        
+        .menu-instalacion-conteudo {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            padding: 25px 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .opcion-instalar-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            color: #1a5c2b;
+            font-size: 1.05rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.2s;
+        }
+
+        .opcion-instalar-btn:active {
+            background: #e2e8f0;
+        }
+
+        .opcion-instalar-btn.primario {
+            background: #f1c40f;
+            border-color: #1a5c2b;
+        }
+
+        .btn-cancelar-menu {
+            width: 100%;
+            background-color: transparent;
+            color: #718096;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
         }
 
         /* ================= CAJA DE MENSAJE ================= */
@@ -214,7 +280,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.6);
-            z-index: 10000;
+            z-index: 10002;
             justify-content: center;
             align-items: center;
             padding: 20px;
@@ -311,22 +377,52 @@
         <iframe class="visor-iframe" id="marcoPdf"></iframe>
     </div>
 
-    <!-- BOTÓN FLOTANTE PARA INSTALAR COMO APLICACIÓN PWA (Nativa desde Navegador) -->
+    <!-- BOTÓN FLOTANTE PARA ABRIR MENÚ DE INSTALACIÓN -->
     <button class="btn-flotante-instalar" id="btnInstalar">
         📲 Instalar App
     </button>
 
+    <!-- NUEVO: MENÚ INFERIOR DE OPCIONES DE INSTALACIÓN (ESTILO APP NATIVA) -->
+    <div class="menu-instalacion-overlay" id="menuInstalacion">
+        <div class="menu-instalacion-conteudo">
+            <h3 style="color:#1a5c2b; margin-bottom: 8px; text-align: center; font-size: 1.3rem;">📲 Instalar Aplicación</h3>
+            <p style="text-align: center; font-size: 0.9rem; color: #4a5568; margin-bottom: 20px;">
+                Instala "Refuerzo Escolar" en tu celular para leer los documentos sin conexión a internet.
+            </p>
+            
+            <!-- Opción 1: Instalación Rápida Automática -->
+            <button class="opcion-instalar-btn primario" id="btnOpcionAutomatica">
+                <span style="font-size: 1.8rem;">⚙️</span> 
+                <div>
+                    <div>Instalación Rápida (Recomendado)</div>
+                    <div style="font-size: 0.8rem; font-weight: normal; color: #4a5568;">Para celulares Android y Chrome</div>
+                </div>
+            </button>
+
+            <!-- Opción 2: Instrucciones Manuales (Para iPhone/Otros) -->
+            <button class="opcion-instalar-btn" id="btnOpcionManual">
+                <span style="font-size: 1.8rem;">🍎</span> 
+                <div>
+                    <div>Instrucciones para iPhone / iOS</div>
+                    <div style="font-size: 0.8rem; font-weight: normal; color: #4a5568;">Para Safari y otros navegadores</div>
+                </div>
+            </button>
+
+            <button class="btn-cancelar-menu" onclick="cerrarMenuInstalacion()">Cancelar</button>
+        </div>
+    </div>
+
     <!-- CAJA DE MENSAJE PERSONALIZADA -->
     <div class="caixa-mensagem-overlay" id="modalMensagem">
         <div class="caixa-mensagem-conteudo">
-            <p id="textoMensagem" style="font-size: 1.05rem; color: #1a5c2b; font-weight: bold; margin-bottom: 10px; white-space: pre-line;"></p>
+            <p id="textoMensagem" style="font-size: 1.05rem; color: #1a5c2b; font-weight: bold; margin-bottom: 10px; white-space: pre-line; text-align: left;"></p>
             <button id="btnAceptarMensaje" class="btn-accion-msj" onclick="cerrarMensaje()">Entendido</button>
         </div>
     </div>
 
     <script>
         // ================= SISTEMA DE LECTURA OFFLINE (CACHÉ) =================
-        const NOMBRE_CACHE = 'app-lecturas-cache-v3'; 
+        const NOMBRE_CACHE = 'app-lecturas-cache-v4'; 
         const ARCHIVOS_A_DESCARGAR = [
             'LECTURA RE 1RO.pdf',
             'LECTURA RE 2DO.pdf',
@@ -352,7 +448,6 @@
             }
         }
         
-        // Iniciar precarga de PDFs al abrir la app para asegurar uso sin internet
         window.onload = preCargarArchivos;
 
         // ================= ABRIR PDF (SOPORTA OFFLINE) =================
@@ -365,7 +460,6 @@
                 const rutaCodificada = encodeURI(rutaArchivo);
                 let archivoGuardado = await cache.match(rutaCodificada);
                 
-                // Si no está en caché, intentar descargar en el momento
                 if (!archivoGuardado) {
                     const respuesta = await fetch(rutaCodificada);
                     if (respuesta.ok) {
@@ -374,7 +468,6 @@
                     }
                 }
                 
-                // Abrir en el iframe visor
                 if (archivoGuardado) {
                     const blobOriginal = await archivoGuardado.blob();
                     const pdfBlob = new Blob([blobOriginal], { type: 'application/pdf' });
@@ -387,13 +480,11 @@
                     mostrarMensaje("❌ Necesitas internet la primera vez para abrir este PDF.");
                 }
             } catch (error) {
-                // Fallback directo si falla la memoria del celular
                 document.getElementById('tituloDocumento').innerText = titulo;
                 document.getElementById('marcoPdf').src = encodeURI(rutaArchivo);
                 document.getElementById('pantallaVisor').style.display = 'flex';
             }
 
-            // Ocultar mensaje de carga
             setTimeout(() => {
                 cerrarMensaje();
                 document.getElementById('btnAceptarMensaje').style.display = 'block';
@@ -424,8 +515,7 @@
             }
         }
 
-        // ================= MANIFEST PWA Y SERVICE WORKER (Para Instalación Nativa) =================
-        // Esto le dice al celular que es una Aplicación y cómo debe verse su ícono
+        // ================= MANIFEST PWA Y SERVICE WORKER =================
         const manifestJSON = {
             "name": "Refuerzo Escolar",
             "short_name": "Lecturas",
@@ -442,7 +532,6 @@
         const blobManifest = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
         document.head.insertAdjacentHTML('beforeend', `<link rel="manifest" href="${URL.createObjectURL(blobManifest)}">`);
 
-        // Registrar Service Worker mínimo necesario para que Android permita instalar la app
         const swCode = `
             self.addEventListener('install', (e) => { self.skipWaiting(); });
             self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
@@ -453,49 +542,68 @@
             navigator.serviceWorker.register(URL.createObjectURL(blobSW)).catch(() => {});
         }
 
-        // ================= LÓGICA DEL BOTÓN FLOTANTE DE INSTALACIÓN NATIVA =================
+        // ================= LÓGICA DEL MENÚ DE INSTALACIÓN =================
         const btnInstalar = document.getElementById('btnInstalar');
+        const menuInstalacion = document.getElementById('menuInstalacion');
         let eventoInstalacion = null;
 
-        // Verifica si la app ya está corriendo instalada desde el celular
+        // Verifica si la app ya está corriendo instalada (PWA Nativa)
         const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
 
-        // Capturamos el evento de instalación que dispara Chrome/Android
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Evitamos que salga el mini cartel automático molesto
             e.preventDefault();
-            // Guardamos el evento
             eventoInstalacion = e;
         });
 
-        // Lo que sucede cuando el alumno presiona el botón "Instalar App"
-        btnInstalar.addEventListener('click', async () => {
+        // 1. Mostrar el Menú al presionar el Botón Flotante
+        btnInstalar.addEventListener('click', () => {
+            if (esStandalone) {
+                mostrarMensaje("⚙️ ¿Cómo desinstalar esta aplicación?\n\nAl ser una aplicación moderna, se desinstala desde el sistema de tu celular:\n\n1. Ve a la pantalla principal de tu teléfono.\n2. Busca el ícono 'Lecturas' o 'Refuerzo Escolar'.\n3. Mantenlo presionado por 2 segundos.\n4. Selecciona 'Desinstalar' o 'Eliminar'.");
+            } else {
+                menuInstalacion.style.display = 'flex';
+            }
+        });
+
+        function cerrarMenuInstalacion() {
+            menuInstalacion.style.display = 'none';
+        }
+
+        // 2. Opción: Instalación Rápida (Android / Chrome)
+        document.getElementById('btnOpcionAutomatica').addEventListener('click', async () => {
             if (!eventoInstalacion) {
-                mostrarMensaje("Para instalar como aplicativo nativo:\n\n1. Toca los 3 puntitos del navegador (arriba a la derecha).\n2. Selecciona 'Agregar a la pantalla principal' o 'Instalar aplicación'.");
+                cerrarMenuInstalacion();
+                mostrarMensaje("Tu navegador actual no soporta la instalación rápida (o ya está instalada).\n\nPor favor, usa la opción de 'Instrucciones Manuales' o asegúrate de abrir este enlace en Google Chrome.");
                 return;
             }
             
-            // Disparamos la ventana de instalación del propio celular (Nativa)
+            // Lanza el cuadro nativo del celular
             eventoInstalacion.prompt();
-            
-            // Esperamos la respuesta del alumno (Instalar o Cancelar)
             const { outcome } = await eventoInstalacion.userChoice;
+            
             if (outcome === 'accepted') {
-                btnInstalar.style.display = 'none'; // Se oculta porque ya se está instalando
+                cerrarMenuInstalacion();
+                mostrarMensaje("✅ ¡Aplicación instalada!\n\nBusca el ícono en la pantalla de tu celular para abrirla.");
+                configurarBotonInstalado();
             }
-            // Limpiamos el evento
             eventoInstalacion = null;
         });
 
-        // Escuchamos si la instalación fue exitosa para dar un mensaje
-        window.addEventListener('appinstalled', () => {
-            btnInstalar.style.display = 'none';
-            mostrarMensaje("✅ ¡Aplicación instalada con éxito!\n\nPuedes cerrarla aquí y buscar el ícono 'Lecturas' directamente en la pantalla de inicio de tu celular para usarla sin internet.");
+        // 3. Opción: Instrucciones Manuales (iPhone / Safari)
+        document.getElementById('btnOpcionManual').addEventListener('click', () => {
+            cerrarMenuInstalacion();
+            mostrarMensaje("📲 Instrucciones Manuales:\n\n1. Toca el ícono de 'Compartir' (el cuadrado con la flecha hacia arriba en iPhone, o los 3 puntitos arriba a la derecha en Android).\n2. En el menú que aparece, selecciona 'Agregar a la pantalla principal' o 'Instalar aplicación'.\n3. Confirma tocando 'Agregar'.");
         });
 
-        // Asegurarnos de que el botón no aparezca si ya entraron desde la app instalada
+        // 4. Cambiar el botón flotante si ya se instaló
+        function configurarBotonInstalado() {
+            btnInstalar.innerHTML = '🗑️ Desinstalar';
+            btnInstalar.style.backgroundColor = '#e53e3e';
+            btnInstalar.style.color = '#ffffff';
+            btnInstalar.style.borderColor = '#c53030';
+        }
+
         if (esStandalone) {
-            btnInstalar.style.display = 'none';
+            configurarBotonInstalado();
         }
     </script>
 
